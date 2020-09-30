@@ -1,0 +1,17 @@
+.App {
+  text-align: center;
+} 
+
+#bean{
+  animation-name:spin;
+  animation-duration:3 s;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+  animation-fill-mode: both;
+  transform-origin: 50%;
+}
+
+@keyframes spin{
+  from{transform:rotate(0deg); }
+  to{transform:rotate(360deg);  }
+}
