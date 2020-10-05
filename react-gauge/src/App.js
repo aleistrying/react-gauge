@@ -15,13 +15,13 @@ function App() {
         size={500}
         valueFontSize={15}
         textValue={true}
-        caption="Don't write too much text\n Or it wont work"
+        caption="Don't write too much text\n Or it wont work\n separate text with newline"
         captionFontSize={5}
         gaugeAngle={230}
         fillBean={(n) => { return ((n % 2 === 0) ? "#6a6a6a" : "#bababa") }}
         fillBeanValue={(n) => { return ((n % 2 === 0) ? "rgb(150, 40, 40)" : "rgb(190, 40, 50)") }}
-        move={false}
-        animationTime={10000}
+        move={true}
+        animationTime={15000}
       />
     </div>
   );

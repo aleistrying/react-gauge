@@ -137,7 +137,7 @@ class Gauge extends React.Component {
     render() {
         this.drawBean = `M ${this.h},${this.k} a ${this.beancurve} ${this.beancurve} 0 0 1 ${this.beanWidth},0 v ${this.beanWidth} a ${this.beancurve} ${this.beancurve} 0 0 1 -${this.beanWidth},0 v -${this.beanWidth} z`;
         this.beans = [];
-        for (let i = 0; i < this.amount; i++) { 
+        for (let i = 0; i < this.amount; i++) {
             this.beans.push(
                 <path
                     id={"gaugeBean" + (i + 1)}
@@ -148,9 +148,9 @@ class Gauge extends React.Component {
                                 ? this.fillBean
                                 : this.fillBean(i))
                             : (typeof this.fillBeanValue !== "function"
-                            ? this.fillBeanValue
-                            : this.fillBeanValue(i))
-                            
+                                ? this.fillBeanValue
+                                : this.fillBeanValue(i))
+
                     }
                     transform={`rotate(${i * (this.gaugeAngle / (this.amount - 1)) - this.compensation
                         } ${this.h} ${this.k})
@@ -168,6 +168,14 @@ class Gauge extends React.Component {
             this.gaugeAngle * (this.state.value / this.max) -
             this.gaugeAngle / 2
         );
+
+        if (this.caption) {
+            let rawTxt= this.caption;
+            this.trueCaption = rawTxt.toString().split("\\n").map((caption,i) => {
+                return <tspan textAnchor="middle" x={this.h} dy={0.6*i *2 + "em"}>{caption}</tspan>;
+            });
+            console.log(this.caption)
+        }
         return (
             <svg
                 width={this.width}
@@ -213,9 +221,9 @@ class Gauge extends React.Component {
                     r={this.dotRadius}
                     fill={this.barDotColor}
                 />
-                {this.caption ? (
+                {this.trueCaption ? (
                     <text textAnchor="middle" x={this.h} y={this.k + this.v} id="captionGaugeId" fontFamily={this.fontFamily} fontWeight={this.fontWeight} fontSize={this.captionFontSize + "px"}>
-                        {this.caption}
+                        {this.trueCaption}
                     </text>
                 ) : ""}
                 {this.textValue ? (
