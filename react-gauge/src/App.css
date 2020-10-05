@@ -9,6 +9,10 @@
   animation-timing-function: ease-in-out;
   animation-fill-mode: both;
   transform-origin: 50%;
+  color:rgb(194, 60, 60);
+} 
+body{
+  background-color:#333;
 }
 
 @keyframes spin{
