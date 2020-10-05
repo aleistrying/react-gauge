@@ -19,9 +19,6 @@ class Gauge extends React.Component {
         this.valueFontSize = props.valueFontSize || 15;
         this.width = props.size || 500;
         this.height = props.size || 500;
-        this.bar1 = null;
-        this.bar2 = null;
-        this.dot = null;
         this.textValue = props.textValue || false;
         this.animationSpeed = 0.1;// move/time )
         this.animationTime = props.animationTime || 15000;
@@ -112,13 +109,11 @@ class Gauge extends React.Component {
     componentWillUnmount() {
         clearInterval(this.timerID);
     }
-    render() {
-
-        this.beans = Array(this.amount);
+    render() { 
         this.drawBean = `M ${this.h},${this.k} a ${this.beancurve} ${this.beancurve} 0 0 1 ${this.beanWidth},0 v ${this.beanWidth} a ${this.beancurve} ${this.beancurve} 0 0 1 -${this.beanWidth},0 v -${this.beanWidth} z`;
-
+        this.beans = [];
         for (let i = 0; i < this.amount; i++) {
-            this.beans[i] = (
+            this.beans.push(
                 <path
                     id={"gaugeBean" + (i + 1)}
                     key={i}
@@ -136,13 +131,13 @@ class Gauge extends React.Component {
                 />
             );
         }
-         console.log(this.beans);
+        console.log(this.beans);
         //validar errores posibles
         if (this.min >= this.max) {
             // console.log("valor this.minimo no puede ser mayor al this.maximo.");
             // console.log("this.max", this.max);
             // console.log("this.min", this.min);
-            this.min = this.max - this.max * 100;
+            this.min = this.max - this.max * 2;
         }
         if (this.state.value > this.max) {
             // console.log("valor no puede ser mayor al this.maximo.");
@@ -157,59 +152,13 @@ class Gauge extends React.Component {
             // console.log("this.state.value", this.state.value);
             // console.log("this.min", this.min);
         }
-        this.bar1 = <path
-            key="1"
-            strokeLinecap="round"
-            strokeWidth="0.8"
-            fill="none"
-            d={this.describeArc(
-                this.h,
-                this.k,
-                this.a + this.v,
-                90 - this.gaugeAngle / 2,
-                this.gaugeAngle - this.gaugeAngle / 2 + 90
-            )}
-            stroke={this.lineStrokeColor}
-        />;
-        this.bar2 =
-            <path
-                key="2"
-                strokeLinecap="round"
-                strokeWidth="0.8"
-                fill="none"
-                d={this.describeArc(
-                    this.h,
-                    this.k,
-                    this.a + this.v,
-                    90 - this.gaugeAngle / 2,
-                    this.gaugeAngle * (this.state.value / this.max) -
-                    this.gaugeAngle / 2 +
-                    90
-                )}
-                stroke={this.barColor}
-            />;
-        this.dot = <circle
-            cx={
-                this.polarToCartesian(
-                    this.h,
-                    this.k,
-                    this.a + this.v,
-                    this.gaugeAngle * (this.state.value / this.max) -
-                    this.gaugeAngle / 2
-                ).x
-            }
-            cy={
-                this.polarToCartesian(
-                    this.h,
-                    this.k,
-                    this.a + this.v,
-                    this.gaugeAngle * (this.state.value / this.max) -
-                    this.gaugeAngle / 2
-                ).y
-            }
-            r={this.dotRadius}
-            fill={this.barDotColor}
-        />;
+        this.dotLocation = this.polarToCartesian(
+            this.h,
+            this.k,
+            this.a + this.v,
+            this.gaugeAngle * (this.state.value / this.max) -
+            this.gaugeAngle / 2
+        );
         return (
             <svg
                 style={{
@@ -220,9 +169,44 @@ class Gauge extends React.Component {
                 viewBox={[20, 20, 60, 60].join(" ")}
             >
                 {this.beans}
-                {this.bar1}
-                {this.bar2}
-                {this.dot}
+                <path
+                    key="totalbar"
+                    strokeLinecap="round"
+                    strokeWidth="0.8"
+                    fill="none"
+                    d={this.describeArc(
+                        this.h,
+                        this.k,
+                        this.a + this.v,
+                        90 - this.gaugeAngle / 2,
+                        this.gaugeAngle - this.gaugeAngle / 2 + 90
+                    )}
+                    stroke={this.lineStrokeColor}
+                /> <path
+                    key="valuebar"
+                    strokeLinecap="round"
+                    strokeWidth="0.8"
+                    fill="none"
+                    d={this.describeArc(
+                        this.h,
+                        this.k,
+                        this.a + this.v,
+                        90 - this.gaugeAngle / 2,
+                        this.gaugeAngle * (this.state.value / this.max) - this.gaugeAngle / 2 + 90
+                    )}
+                    stroke={this.barColor}
+                />
+
+                <circle
+                    cx={
+                        this.dotLocation.x
+                    }
+                    cy={
+                        this.dotLocation.y
+                    }
+                    r={this.dotRadius}
+                    fill={this.barDotColor}
+                />
                 {this.caption ? (
                     <text textAnchor="middle" x={this.h} y={this.k + this.v} id="captionGaugeId" fontFamily={this.fontFamily} fontWeight={this.fontWeight} fontSize={this.captionFontSize + "px"}>
                         {this.caption}
