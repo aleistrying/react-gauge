@@ -8,6 +8,8 @@ class Gauge extends React.Component {
         this.caption = props.caption || "Eficiencia";
         this.amount = parseInt(props.amount) || 25;
         this.fillBean = props.fillBean || "#bababa";
+        this.fillBeanValue = props.fillBeanValue || "rgb(190, 40, 50)";
+        // this.fillBean = props.fillBean || "#bababa";
         this.barColor = props.barColor || "rgb(96, 197, 75)";
         this.barDotColor = props.barDotColor || "rgba(83, 167, 66,1)";
         this.lineStrokeColor = props.lineStrokeColor || "#bababa";
@@ -89,17 +91,40 @@ class Gauge extends React.Component {
     }
 
     componentDidMount() {
+        if (this.min >= this.max) {
+            // console.log("valor this.minimo no puede ser mayor al this.maximo.");
+            // console.log("this.max", this.max);
+            // console.log("this.min", this.min);
+            this.min = this.max - this.max * 2;
+        }
+        else if (this.state.value > this.max) {
+            // console.log("valor no puede ser mayor al this.maximo.");
+            // console.log("this.max", this.max);
+            // console.log("this.state.value", this.state.value);
+            this.setState(() => ({
+                value: this.max
+            }));
+        }
+        else if (this.state.value < this.min) {
+            // console.log("valor no puede ser menor al this.minimo.");
+            // console.log("this.state.value", this.state.value);
+            // console.log("this.min", this.min);
+            this.setState(() => ({
+                value: this.min
+            }));
+        }
+
         if (this.props.move === true) {
             this.timerID = setInterval(() => {
                 if (this.state.value <= this.min && this.state.moveFactor === -1) {
-                    this.setState((state) => {
-                        state.moveFactor = 1
-                    });
+                    this.setState(() => ({
+                        moveFactor: 1
+                    }));
                 }
                 else if (this.state.value >= this.max && this.state.moveFactor === 1) {
-                    this.setState((state) => {
-                        state.moveFactor = -1
-                    });
+                    this.setState(() => ({
+                        moveFactor: -1
+                    }));
                 }
                 this.moveBar(this.animationSpeed * this.state.moveFactor);
 
@@ -109,20 +134,23 @@ class Gauge extends React.Component {
     componentWillUnmount() {
         clearInterval(this.timerID);
     }
-    render() { 
+    render() {
         this.drawBean = `M ${this.h},${this.k} a ${this.beancurve} ${this.beancurve} 0 0 1 ${this.beanWidth},0 v ${this.beanWidth} a ${this.beancurve} ${this.beancurve} 0 0 1 -${this.beanWidth},0 v -${this.beanWidth} z`;
         this.beans = [];
-        for (let i = 0; i < this.amount; i++) {
+        for (let i = 0; i < this.amount; i++) { 
             this.beans.push(
                 <path
                     id={"gaugeBean" + (i + 1)}
                     key={i}
                     fill={
                         this.state.value <= (this.max / this.amount) * i
-                            ? typeof this.fillBean
+                            ? (typeof this.fillBean !== "function"
                                 ? this.fillBean
-                                : this.fillBean(i)
-                            : "rgb(194, 60, 60)"
+                                : this.fillBean(i))
+                            : (typeof this.fillBeanValue !== "function"
+                            ? this.fillBeanValue
+                            : this.fillBeanValue(i))
+                            
                     }
                     transform={`rotate(${i * (this.gaugeAngle / (this.amount - 1)) - this.compensation
                         } ${this.h} ${this.k})
@@ -131,27 +159,8 @@ class Gauge extends React.Component {
                 />
             );
         }
-        console.log(this.beans);
-        //validar errores posibles
-        if (this.min >= this.max) {
-            // console.log("valor this.minimo no puede ser mayor al this.maximo.");
-            // console.log("this.max", this.max);
-            // console.log("this.min", this.min);
-            this.min = this.max - this.max * 2;
-        }
-        if (this.state.value > this.max) {
-            // console.log("valor no puede ser mayor al this.maximo.");
-            // console.log("this.max", this.max);
-            // console.log("this.state.value", this.state.value);
-            this.setState((state) => {
-                state.value = this.max;
-            });
-        }
-        if (this.state.value < this.min) {
-            // console.log("valor no puede ser menor al this.minimo.");
-            // console.log("this.state.value", this.state.value);
-            // console.log("this.min", this.min);
-        }
+        // console.log(this.beans); 
+
         this.dotLocation = this.polarToCartesian(
             this.h,
             this.k,
@@ -161,9 +170,6 @@ class Gauge extends React.Component {
         );
         return (
             <svg
-                style={{
-                    border: "1ph solid pink",
-                }}
                 width={this.width}
                 height={this.height}
                 viewBox={[20, 20, 60, 60].join(" ")}
@@ -228,179 +234,5 @@ class Gauge extends React.Component {
         );
     }
 }
-
-// const Gauge = ({
-//     value = 50,
-//     min = 0,
-//     max = 100,
-//     caption = "a",
-//     amount = 25,
-//     fillBean = "#bababa",
-//     barColor = "rgb(96, 197, 75)",
-//     barDotColor = "rgb(83, 167, 66)",
-//     lineStrokeColor = "#bababa",
-//     gaugeAngle = 180,
-//     guideLine = false,
-// }) => {
-//     min = parseFloat(min);
-//     max = parseFloat(max);
-//     value = parseFloat(value);
-//     let dotRadius = 1;
-//     let beans = new Array(amount);
-//     let beanWidth = 1.2;
-//     let beancurve = beanWidth / 2;
-//     let v = 20;
-//     let a = beanWidth * 3;
-//     let h = 50,
-//         k = 50;
-//     let drawBean = `M ${h},${k} a ${beancurve} ${beancurve} 0 0 1 ${beanWidth},0 v ${beanWidth} a ${beancurve} ${beancurve} 0 0 1 -${beanWidth},0 v -${beanWidth} z`;
-//     let compensation = 90;
-
-//     if (gaugeAngle > 180) {
-//         compensation += gaugeAngle / 2 - 90;
-//     } else if (gaugeAngle < 180) {
-//         compensation -= 90 - gaugeAngle / 2;
-//     }
-//     for (let i = 0; i < beans.length; i++) {
-//         beans[i] = (
-//             <path
-//                 id={"gaugeBean" + (i + 1)}
-//                 key={i}
-//                 fill={
-//                     value <= (max / amount) * i
-//                         ? typeof fillBean
-//                             ? fillBean
-//                             : fillBean(i)
-//                         : "rgb(194, 60, 60)"
-//                 }
-//                 transform={`rotate(${i * (gaugeAngle / (beans.length - 1)) - compensation
-//                     } ${h} ${k})
-//                     translate(-${beanWidth / 2} -${v})`}
-//                 d={drawBean} //"M 50,50 a 0.5 0.5 0 0 1 1,0 v 1 a 0.5 0.5 0 0 1 -1,0 v -1 z"
-//             />
-//         );
-//     }
-//     //validar errores posibles
-//     if (min >= max) {
-//         console.log("valor minimo no puede ser mayor al maximo.");
-//         console.log("max", max);
-//         console.log("min", min);
-//         min = max - max * 100;
-//     }
-//     if (value > max) {
-//         console.log("valor no puede ser mayor al maximo.");
-//         console.log("max", max);
-//         console.log("value", value);
-//         value = max;
-//     }
-//     if (value < min) {
-//         console.log("valor no puede ser menor al minimo.");
-//         console.log("value", value);
-//         console.log("min", min);
-//     }
-
-//     function polarToCartesian(centerX, centerY, radius, angleInDegrees) {
-//         var angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180.0;
-
-//         return {
-//             x: centerX + radius * Math.cos(angleInRadians),
-//             y: centerY + radius * Math.sin(angleInRadians),
-//         };
-//     }
-
-//     function describeArc(x, y, radius, startAngle, endAngle) {
-//         var start = polarToCartesian(x, y, radius, endAngle - 90);
-//         var end = polarToCartesian(x, y, radius, startAngle - 90);
-
-//         var arcSweep = endAngle - startAngle <= 180 ? "0" : "1";
-
-//         var d = [
-//             "M",
-//             start.x,
-//             start.y,
-//             "A",
-//             radius,
-//             radius,
-//             0,
-//             arcSweep,
-//             0,
-//             end.x,
-//             end.y,
-//         ].join(" ");
-
-//         return d;
-//     }
-//     return (
-//         <svg
-//             style={{
-//                 border: "1ph solid pink",
-//             }}
-//             width="300"
-//             height="300"
-//             viewBox="0 0 100 100"
-//         >
-//             {beans}
-//             <path
-//                 key="1"
-//                 strokeLinecap="round"
-//                 strokeWidth="0.8"
-//                 fill="none"
-//                 d={describeArc(
-//                     h,
-//                     k,
-//                     a + v,
-//                     90 - gaugeAngle / 2,
-//                     gaugeAngle - gaugeAngle / 2 + 90
-//                 )}
-//                 stroke={lineStrokeColor}
-//             />
-//             <path
-//                 key="2"
-//                 strokeLinecap="round"
-//                 strokeWidth="0.8"
-//                 fill="none"
-//                 d={describeArc(
-//                     h,
-//                     k,
-//                     a + v,
-//                     90 - gaugeAngle / 2,
-//                     gaugeAngle * (value / max) - gaugeAngle / 2 + 90
-//                 )}
-//                 stroke={barColor}
-//             />
-//             {caption ? (
-//                 <text x={h} y={k} id={caption + "id"}>
-//                     caption
-//                 </text>
-//             ) : null}
-//             <circle
-//                 cx={
-//                     polarToCartesian(
-//                         h,
-//                         k,
-//                         a + v,
-//                         gaugeAngle * (value / max) - gaugeAngle / 2
-//                     ).x
-//                 }
-//                 cy={
-//                     polarToCartesian(
-//                         h,
-//                         k,
-//                         a + v,
-//                         gaugeAngle * (value / max) - gaugeAngle / 2
-//                     ).y
-//                 }
-//                 r={dotRadius}
-//                 fill={barDotColor}
-//             />
-//             {guideLine ? (
-//                 <path strokeWidth="0.1" stroke="black" d="M 0 50 h 100" />
-//             ) : null}
-//             {guideLine ? (
-//                 <path strokeWidth="0.1" stroke="black" d="M 50 0 v 100" />
-//             ) : null}
-//         </svg>
-//     );
-// };
 
 export { Gauge };
