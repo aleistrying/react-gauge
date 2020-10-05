@@ -9,7 +9,7 @@ class Gauge extends React.Component {
         this.amount = parseInt(props.amount) || 25;
         this.fillBean = props.fillBean || "#bababa";
         this.barColor = props.barColor || "rgb(96, 197, 75)";
-        this.barDotColor = props.barDotColor || "rgb(83, 167, 66)";
+        this.barDotColor = props.barDotColor || "rgba(83, 167, 66,1)";
         this.lineStrokeColor = props.lineStrokeColor || "#bababa";
         this.gaugeAngle = parseFloat(props.gaugeAngle) || 200;
         this.guideLine = props.guideLine || false;
@@ -17,8 +17,8 @@ class Gauge extends React.Component {
         this.fontWeight = props.fontWeight || "200";
         this.captionFontSize = props.captionFontSize || 15;
         this.valueFontSize = props.valueFontSize || 15;
-        this.width = props.width || 500;
-        this.height = props.height || 500;
+        this.width = props.size || 500;
+        this.height = props.size || 500;
         this.bar1 = null;
         this.bar2 = null;
         this.dot = null;
@@ -34,6 +34,24 @@ class Gauge extends React.Component {
         this.polarToCartesian = this.polarToCartesian.bind(this);
         this.describeArc = this.describeArc.bind(this);
         this.moveBar = this.moveBar.bind(this);
+
+
+        //variables to create objects(beans,and curved lines)
+        this.dotRadius = 1;
+        this.beans = Array(this.amount);
+        this.beanWidth = 1;
+        this.beancurve = this.beanWidth * 1 / 4;
+        this.v = 20;
+        this.a = this.beanWidth * 3;
+        this.h = 50;
+        this.k = 50;
+        this.compensation = 90;
+        if (this.gaugeAngle > 180) {
+            this.compensation += this.gaugeAngle / 2 - 90;
+        } else if (this.gaugeAngle < 180) {
+            this.compensation -= 90 - this.gaugeAngle / 2;
+        }
+
     }
 
     polarToCartesian(centerX, centerY, radius, angleInDegrees) {
@@ -95,23 +113,12 @@ class Gauge extends React.Component {
         clearInterval(this.timerID);
     }
     render() {
-        const dotRadius = 1;
-        const beans = Array(this.amount);
-        const beanWidth = 1;
-        const beancurve = beanWidth * 1 / 4;
-        let v = 20;
-        const a = beanWidth * 3;
-        const h = 50,
-            k = 50;
-        const drawBean = `M ${h},${k} a ${beancurve} ${beancurve} 0 0 1 ${beanWidth},0 v ${beanWidth} a ${beancurve} ${beancurve} 0 0 1 -${beanWidth},0 v -${beanWidth} z`;
-        let compensation = 90;
-        if (this.gaugeAngle > 180) {
-            compensation += this.gaugeAngle / 2 - 90;
-        } else if (this.gaugeAngle < 180) {
-            compensation -= 90 - this.gaugeAngle / 2;
-        }
+
+        this.beans = Array(this.amount);
+        this.drawBean = `M ${this.h},${this.k} a ${this.beancurve} ${this.beancurve} 0 0 1 ${this.beanWidth},0 v ${this.beanWidth} a ${this.beancurve} ${this.beancurve} 0 0 1 -${this.beanWidth},0 v -${this.beanWidth} z`;
+
         for (let i = 0; i < this.amount; i++) {
-            beans[i] = (
+            this.beans[i] = (
                 <path
                     id={"gaugeBean" + (i + 1)}
                     key={i}
@@ -122,14 +129,14 @@ class Gauge extends React.Component {
                                 : this.fillBean(i)
                             : "rgb(194, 60, 60)"
                     }
-                    transform={`rotate(${i * (this.gaugeAngle / (this.amount - 1)) - compensation
-                        } ${h} ${k})
-                          translate(-${beanWidth / 2} -${v})`}
-                    d={drawBean} //"M 50,50 a 0.5 0.5 0 0 1 1,0 v 1 a 0.5 0.5 0 0 1 -1,0 v -1 z"
+                    transform={`rotate(${i * (this.gaugeAngle / (this.amount - 1)) - this.compensation
+                        } ${this.h} ${this.k})
+                          translate(-${this.beanWidth / 2} -${this.v})`}
+                    d={this.drawBean} //"M 50,50 a 0.5 0.5 0 0 1 1,0 v 1 a 0.5 0.5 0 0 1 -1,0 v -1 z"
                 />
             );
         }
-        // console.log(beans);
+         console.log(this.beans);
         //validar errores posibles
         if (this.min >= this.max) {
             // console.log("valor this.minimo no puede ser mayor al this.maximo.");
@@ -156,9 +163,9 @@ class Gauge extends React.Component {
             strokeWidth="0.8"
             fill="none"
             d={this.describeArc(
-                h,
-                k,
-                a + v,
+                this.h,
+                this.k,
+                this.a + this.v,
                 90 - this.gaugeAngle / 2,
                 this.gaugeAngle - this.gaugeAngle / 2 + 90
             )}
@@ -171,9 +178,9 @@ class Gauge extends React.Component {
                 strokeWidth="0.8"
                 fill="none"
                 d={this.describeArc(
-                    h,
-                    k,
-                    a + v,
+                    this.h,
+                    this.k,
+                    this.a + this.v,
                     90 - this.gaugeAngle / 2,
                     this.gaugeAngle * (this.state.value / this.max) -
                     this.gaugeAngle / 2 +
@@ -184,23 +191,23 @@ class Gauge extends React.Component {
         this.dot = <circle
             cx={
                 this.polarToCartesian(
-                    h,
-                    k,
-                    a + v,
+                    this.h,
+                    this.k,
+                    this.a + this.v,
                     this.gaugeAngle * (this.state.value / this.max) -
                     this.gaugeAngle / 2
                 ).x
             }
             cy={
                 this.polarToCartesian(
-                    h,
-                    k,
-                    a + v,
+                    this.h,
+                    this.k,
+                    this.a + this.v,
                     this.gaugeAngle * (this.state.value / this.max) -
                     this.gaugeAngle / 2
                 ).y
             }
-            r={dotRadius}
+            r={this.dotRadius}
             fill={this.barDotColor}
         />;
         return (
@@ -212,20 +219,17 @@ class Gauge extends React.Component {
                 height={this.height}
                 viewBox={[20, 20, 60, 60].join(" ")}
             >
-                {beans}
+                {this.beans}
                 {this.bar1}
                 {this.bar2}
-                {this.dot//1px 16.95 x 11.4 = 5.65 x 3.8
-                    //2px 31.6833 x 18.35 = 10.5611 x 6.1166
-                    //10px 147.367 x 85.4333 = 49.12233 x 28.477766
-                }
+                {this.dot}
                 {this.caption ? (
-                    <text textAnchor="middle" x={h} y={k + v} id="captionGaugeId" fontFamily={this.fontFamily} fontWeight={this.fontWeight} fontSize={this.captionFontSize + "px"}>
+                    <text textAnchor="middle" x={this.h} y={this.k + this.v} id="captionGaugeId" fontFamily={this.fontFamily} fontWeight={this.fontWeight} fontSize={this.captionFontSize + "px"}>
                         {this.caption}
                     </text>
                 ) : ""}
                 {this.textValue ? (
-                    <text textAnchor="middle" x={h} y={k + v / 2} id="textValueGaugeId" fontFamily={this.fontFamily} fontWeight={this.fontWeight} fontSize={this.valueFontSize + "px"}>
+                    <text textAnchor="middle" x={this.h} y={this.k + this.v / 2} id="textValueGaugeId" fontFamily={this.fontFamily} fontWeight={this.fontWeight} fontSize={this.valueFontSize + "px"}>
                         {Math.round(this.state.value)}
                     </text>
                 ) : ""}

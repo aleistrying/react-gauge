@@ -25,16 +25,17 @@ function App() {
     <div className="App">
       <Gauge
         min={0}
-        max={100}
-        value={100}
+        max={50}
+        value={25}
+        size={1000}
         valueFontSize={15}
         textValue={true}
-        caption="Porcentaje de Datos"
+        caption="Porcentaje de Datos si escribes texto"
         captionFontSize={5}
         gaugeAngle={230}
-        move={false}
         fillBean="#bababa"
-        animationTime={5000}
+        move={true}
+        animationTime={1000000}
       />
     </div>
   );
